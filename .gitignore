@@ -1,2 +1,3 @@
 /.idea
 /cfn_runner.egg-info
+/cfn_runner/__pycache__
