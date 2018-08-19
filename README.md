@@ -1,5 +1,6 @@
 cfn_runner is tool to run cloud formation stacks with properties configured on a yaml file, the properties files can be used to deploy the same stack in multiple environments
 
+** NOTE ** using the yaml shorthand is not supported e.g. ```!Ref logicalName```
 ## Cloudformation Stack
 Stack resources can be broken apart into multiple YAML files which will get merged together. This wouls let you put your EC2 configuration in one file and RDS into another then have them merged into the same stack
 

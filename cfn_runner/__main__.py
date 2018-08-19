@@ -83,13 +83,13 @@ def main():
 
         for propkey in stack_properties['parameters']:
             value = stack_properties['parameters'][propkey]
-            
-            if value[0] is "$":
+            print(value)
+            if type(value) is str and value[0] is "$":
                 value = os.environ[value[1:]]
 
             prop = {
                 "ParameterKey": propkey,
-                "ParameterValue": value
+                "ParameterValue": str(value).lower() if type(value) is bool else value
             }
 
             parameter_list.append(prop)    

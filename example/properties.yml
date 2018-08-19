@@ -3,3 +3,4 @@ stackname: stackname
 parameters:
   foo: bar
   baz: $USER
+  boolValue: true

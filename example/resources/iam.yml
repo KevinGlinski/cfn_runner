@@ -1,10 +1,10 @@
 Parameters:
   foo:
     Type: String
-    Description: DB Name e.g. DB0
   baz:
     Type: String
-    Description: DB Name e.g. DB0    
+  boolValue:
+    Type: String
 Resources: 
   RootRole: 
     Type: "AWS::IAM::Role"
