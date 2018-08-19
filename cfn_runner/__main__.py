@@ -151,6 +151,7 @@ def main():
             print ("nothing to do")
     except Exception as ex:
         print(ex)
+        print(traceback.format_exc())
         sys.exit(1)     
 if __name__ == '__main__':
     main()
