@@ -82,7 +82,7 @@ def main():
 
         for propkey in stack_properties['parameters']:
             value = stack_properties['parameters'][propkey]
-            print(value)
+            
             if value[0] is "$":
                 value = os.environ[value[1:]]
 
@@ -149,7 +149,8 @@ def main():
         #     UPDATE_IN_PROGRESS
         else:
             print ("nothing to do")
-    except :
+    except Exception as ex:
+        print(ex)
         sys.exit(1)     
 if __name__ == '__main__':
     main()
