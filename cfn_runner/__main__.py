@@ -89,7 +89,7 @@ def main():
 
             prop = {
                 "ParameterKey": propkey,
-                "ParameterValue": str(value).lower() if type(value) is bool else value
+                "ParameterValue": value if type(value) is str else str(value).lower()
             }
 
             parameter_list.append(prop)    
