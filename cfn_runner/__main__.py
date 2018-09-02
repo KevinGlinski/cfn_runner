@@ -6,14 +6,14 @@ import os
 import time
 import sys
 import traceback 
+from deepmerge import always_merger
 
 def main():
     
     def merge_dicts(x, y):
         """Given two dicts, merge them into a new dict as a shallow copy."""
-        z = x.copy()
-        z.update(y)
-        return z
+        result = always_merger.merge(x,y)
+        return result
 
     def get_stack_status(stackname, stack_properties):
         stackstatus = cloudformation.describe_stacks(
@@ -99,8 +99,6 @@ def main():
             with open(args.resources_directory + "/" + file, 'r') as stream:
 
                 file_resources = yaml.load(stream)
-                print('-----')
-                print(file_resources)
                 resources = merge_dicts(resources, file_resources)
 
         print(resources)
