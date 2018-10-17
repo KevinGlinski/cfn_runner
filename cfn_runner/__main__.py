@@ -84,7 +84,7 @@ def main():
         for propkey in stack_properties['parameters']:
             value = stack_properties['parameters'][propkey]
             print(value)
-            if type(value) is str and value[0] is "$":
+            if type(value) is str and len(value) > 0 and value[0] is "$":
                 value = os.environ[value[1:]]
 
             prop = {
