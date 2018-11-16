@@ -119,6 +119,7 @@ def main():
                     Parameters=parameter_list
                 )
             except Exception as e:
+                print (e)
                 if 'No updates are to be performed' not in str(e) :
                     print ('not in e')
                     raise e
