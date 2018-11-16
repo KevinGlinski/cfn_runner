@@ -80,19 +80,20 @@ def main():
         print(stack_properties)
 
         cloudformation = boto3.client('cloudformation', region_name=stack_properties['region'])
+        
+        if 'parameters' in stack_properties:
+            for propkey in stack_properties['parameters']:
+                value = stack_properties['parameters'][propkey]
+                print(value)
+                if type(value) is str and len(value) > 0 and value[0] is "$":
+                    value = os.environ[value[1:]]
 
-        for propkey in stack_properties['parameters']:
-            value = stack_properties['parameters'][propkey]
-            print(value)
-            if type(value) is str and len(value) > 0 and value[0] is "$":
-                value = os.environ[value[1:]]
+                prop = {
+                    "ParameterKey": propkey,
+                    "ParameterValue": value if type(value) is str else str(value).lower()
+                }
 
-            prop = {
-                "ParameterKey": propkey,
-                "ParameterValue": value if type(value) is str else str(value).lower()
-            }
-
-            parameter_list.append(prop)    
+                parameter_list.append(prop)    
 
         resources = {}
         for file in os.listdir(args.resources_directory):
