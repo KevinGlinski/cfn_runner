@@ -157,38 +157,36 @@ def main():
                 return
         else:
             print('not dry run')
-            return
+        
+        if has_stack(stack_properties['stackname']):
+            print(resources)
 
+            try:
 
-        # if has_stack(stack_properties['stackname']):
-        #     print(resources)
-
-        #     try:
-
-        #         response = cloudformation.update_stack(
-        #             StackName=stack_properties['stackname'],
-        #             TemplateBody=json.dumps(resources),
-        #             Tags=taglist,
-        #             Capabilities=[
-        #                 'CAPABILITY_IAM',
-        #             ],
-        #             Parameters=parameter_list
-        #         )
-        #     except Exception as e:
-        #         if 'No updates are to be performed' not in str(e) :
-        #             print ('not in e')
-        #             raise e
-        # else:
-        #     response = cloudformation.create_stack(
-        #         StackName=stack_properties['stackname'],
-        #         TemplateBody=json.dumps(resources),
-        #         Tags=taglist,
-        #         Capabilities=[
-        #             'CAPABILITY_IAM',
-        #         ],
-        #         Parameters=parameter_list
+                response = cloudformation.update_stack(
+                    StackName=stack_properties['stackname'],
+                    TemplateBody=json.dumps(resources),
+                    Tags=taglist,
+                    Capabilities=[
+                        'CAPABILITY_IAM',
+                    ],
+                    Parameters=parameter_list
+                )
+            except Exception as e:
+                if 'No updates are to be performed' not in str(e) :
+                    print ('not in e')
+                    raise e
+        else:
+            response = cloudformation.create_stack(
+                StackName=stack_properties['stackname'],
+                TemplateBody=json.dumps(resources),
+                Tags=taglist,
+                Capabilities=[
+                    'CAPABILITY_IAM',
+                ],
+                Parameters=parameter_list
                 
-        #     )
+            )
 
         if response:
             print(response)
