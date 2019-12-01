@@ -42,6 +42,10 @@ def main():
     parser.add_argument('--resources', dest='resources_directory',
                     help='Path to the resources directory', required=True)                   
 
+
+    parser.add_argument('--dryrun', dest='dry_run', action='store_true',
+                    help='show a list of changes from existing stack')                   
+
     try:
         args = parser.parse_args()
 
@@ -54,14 +58,14 @@ def main():
 
         with open(args.properties_filename, 'r') as stream:
             try:
-                stack_properties = yaml.load(stream)
+                stack_properties = yaml.load(stream, Loader=yaml.BaseLoader)
             except yaml.YAMLError as exc:
                 print(exc)
 
         if args.tags_filename:
             with open(args.tags_filename, 'r') as stream:
                 try:
-                    stack_tags = yaml.load(stream)
+                    stack_tags = yaml.load(stream, Loader=yaml.BaseLoader)
                 except yaml.YAMLError as exc:
                     print(exc)   
                     sys.exit(1)     
@@ -98,40 +102,89 @@ def main():
         for file in os.listdir(args.resources_directory):
             with open(args.resources_directory + "/" + file, 'r') as stream:
 
-                file_resources = yaml.load(stream)
+                file_resources = yaml.load(stream, Loader=yaml.BaseLoader)
                 resources = merge_dicts(resources, file_resources)
-
-        print(resources)
 
         response = {}
 
-        if has_stack(stack_properties['stackname']):
-            try:
+        if args.dry_run:
 
-                response = cloudformation.update_stack(
+            change_type = "CREATE"
+
+            if has_stack(stack_properties['stackname']):
+                change_type = 'UPDATE'
+
+            cloudformation.create_change_set(
                     StackName=stack_properties['stackname'],
                     TemplateBody=json.dumps(resources),
                     Tags=taglist,
                     Capabilities=[
                         'CAPABILITY_IAM',
                     ],
-                    Parameters=parameter_list
+                    Parameters=parameter_list,
+                    ChangeSetName='test',
+                    ChangeSetType=change_type
                 )
-            except Exception as e:
-                if 'No updates are to be performed' not in str(e) :
-                    print ('not in e')
-                    raise e
-        else:
-            response = cloudformation.create_stack(
+
+            waiter = cloudformation.get_waiter('change_set_create_complete')
+            waiter.wait(
+                ChangeSetName='test',
                 StackName=stack_properties['stackname'],
-                TemplateBody=json.dumps(resources),
-                Tags=taglist,
-                Capabilities=[
-                    'CAPABILITY_IAM',
-                ],
-                Parameters=parameter_list
-                
+                WaiterConfig={
+                    'Delay': 5,
+                    'MaxAttempts': 123
+                }
             )
+
+            response = cloudformation.describe_change_set(
+                ChangeSetName='test',
+                StackName=stack_properties['stackname']
+            )
+
+            # print(response)
+            for change in response['Changes']:
+                print(change)
+
+            cloudformation.delete_change_set(
+                ChangeSetName='test',
+                StackName=stack_properties['stackname']
+            )
+                
+            return
+        else:
+            print('not dry run')
+            return
+
+
+        # if has_stack(stack_properties['stackname']):
+        #     print(resources)
+
+        #     try:
+
+        #         response = cloudformation.update_stack(
+        #             StackName=stack_properties['stackname'],
+        #             TemplateBody=json.dumps(resources),
+        #             Tags=taglist,
+        #             Capabilities=[
+        #                 'CAPABILITY_IAM',
+        #             ],
+        #             Parameters=parameter_list
+        #         )
+        #     except Exception as e:
+        #         if 'No updates are to be performed' not in str(e) :
+        #             print ('not in e')
+        #             raise e
+        # else:
+        #     response = cloudformation.create_stack(
+        #         StackName=stack_properties['stackname'],
+        #         TemplateBody=json.dumps(resources),
+        #         Tags=taglist,
+        #         Capabilities=[
+        #             'CAPABILITY_IAM',
+        #         ],
+        #         Parameters=parameter_list
+                
+        #     )
 
         if response:
             print(response)
