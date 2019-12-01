@@ -140,7 +140,7 @@ def main():
                 StackName=stack_properties['stackname']
             )
 
-            while "CREATE_IN_PROGRESS" == response["Status"]:
+            while "CREATE_IN_PROGRESS" == response["Status"] or "CREATE_PENDING" == response["Status"] :
                 print(response["Status"])
                 time.sleep(3)
 
@@ -149,11 +149,11 @@ def main():
                     StackName=stack_properties['stackname']
                 )
 
-            print(response)
-
+        
             # print(response)
             for change in response['Changes']:
-                print(change)
+                if "Type" in change and change["Type"] == "Resource":
+                    print("{} {} {} {}".format(change["ResourceChange"]["Action"], change["ResourceChange"]["ResourceType"], change["ResourceChange"]["LogicalResourceId"], change["ResourceChange"]["PhysicalResourceId"]))
 
             cloudformation.delete_change_set(
                 ChangeSetName='test',
