@@ -114,18 +114,18 @@ def main():
 
             if has_stack(stack_properties['stackname']):
                 change_type = 'UPDATE'
-
-            cloudformation.create_change_set(
-                    StackName=stack_properties['stackname'],
-                    TemplateBody=json.dumps(resources),
-                    Tags=taglist,
-                    Capabilities=[
-                        'CAPABILITY_IAM',
-                    ],
-                    Parameters=parameter_list,
-                    ChangeSetName='test',
-                    ChangeSetType=change_type
-                )
+            try:
+                cloudformation.create_change_set(
+                        StackName=stack_properties['stackname'],
+                        TemplateBody=json.dumps(resources),
+                        Tags=taglist,
+                        Capabilities=[
+                            'CAPABILITY_IAM',
+                        ],
+                        Parameters=parameter_list,
+                        ChangeSetName='test',
+                        ChangeSetType=change_type
+                    )
             except Exception as e:
                 print (e)
                 if 'No updates are to be performed' not in str(e) :
@@ -154,9 +154,6 @@ def main():
                 StackName=stack_properties['stackname']
             )
                 
-            return
-        else:
-            print('not dry run')
             return
 
 
