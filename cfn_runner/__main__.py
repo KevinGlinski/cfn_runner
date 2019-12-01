@@ -114,50 +114,58 @@ def main():
 
             if has_stack(stack_properties['stackname']):
                 change_type = 'UPDATE'
-                try:
-                    cloudformation.create_change_set(
-                            StackName=stack_properties['stackname'],
-                            TemplateBody=json.dumps(resources),
-                            Tags=taglist,
-                            Capabilities=[
-                                'CAPABILITY_IAM',
-                            ],
-                            Parameters=parameter_list,
-                            ChangeSetName='test',
-                            ChangeSetType=change_type
-                        )
-                except Exception as e:
-                    print (e)
-                    if 'No updates are to be performed' not in str(e) :
-                        print ('not in e')
-                        raise e
-            else:
-                response = cloudformation.create_stack(
-                    StackName=stack_properties['stackname'],
-                    WaiterConfig={
-                        'Delay': 5,
-                        'MaxAttempts': 123
-                    }
-                )
+
+            try:
+                cloudformation.create_change_set(
+                        StackName=stack_properties['stackname'],
+                        TemplateBody=json.dumps(resources),
+                        Tags=taglist,
+                        Capabilities=[
+                            'CAPABILITY_IAM',
+                        ],
+                        Parameters=parameter_list,
+                        ChangeSetName='test',
+                        ChangeSetType=change_type
+                    )
+
+                
+            except Exception as e:
+                print (e)
+                if 'No updates are to be performed' not in str(e) :
+                    print ('not in e')
+                    raise e
+         
+            response = cloudformation.describe_change_set(
+                ChangeSetName='test',
+                StackName=stack_properties['stackname']
+            )
+
+            while "CREATE_IN_PROGRESS" == response["Status"]:
+                print(response["Status"])
+                time.sleep(3)
 
                 response = cloudformation.describe_change_set(
                     ChangeSetName='test',
                     StackName=stack_properties['stackname']
                 )
 
-                # print(response)
-                for change in response['Changes']:
-                    print(change)
+            print(response)
 
-                cloudformation.delete_change_set(
-                    ChangeSetName='test',
-                    StackName=stack_properties['stackname']
-                )
-                    
-                return
+            # print(response)
+            for change in response['Changes']:
+                print(change)
+
+            cloudformation.delete_change_set(
+                ChangeSetName='test',
+                StackName=stack_properties['stackname']
+            )
+            
+            print("Dry run complete")                    
+            return
         else:
             print('not dry run')
-        
+
+
         if has_stack(stack_properties['stackname']):
             print(resources)
 
@@ -187,6 +195,7 @@ def main():
                 Parameters=parameter_list
                 
             )
+
 
         if response:
             print(response)
