@@ -81,8 +81,7 @@ def main():
             taglist.append(prop)
 
         parameter_list = []
-        print(stack_properties)
-
+        
         cloudformation = boto3.client('cloudformation', region_name=stack_properties['region'])
         
         if 'parameters' in stack_properties:
@@ -96,6 +95,8 @@ def main():
                     "ParameterKey": propkey,
                     "ParameterValue": value if type(value) is str else str(value).lower()
                 }
+
+                print("Param Key: {} Value: {}".format(prop["ParameterKey"], prop["ParameterValue"]))
 
                 parameter_list.append(prop)    
 
@@ -112,6 +113,7 @@ def main():
 
             change_type = "CREATE"
 
+            print(json.dumps(resources))
             if has_stack(stack_properties['stackname']):
                 change_type = 'UPDATE'
 
@@ -208,7 +210,7 @@ def main():
 
             print (stack_status)
             if "ROLLBACK" in stack_status:
-                raise "Stack not updated properly"
+                raise Exception("Stack not updated properly")
         #     UPDATE_IN_PROGRESS
         else:
             print ("nothing to do")
