@@ -90,13 +90,15 @@ def main():
         if 'parameters' in stack_properties:
             for propkey in stack_properties['parameters']:
                 value = stack_properties['parameters'][propkey]
-                print(value)
+                print("{} type {}".format(value, type(value)))
                 if type(value) is str and len(value) > 0 and value[0] is "$":
+                    print("envar {}= {}", value[1:], os.environ[value[1:]])
                     value = os.environ[value[1:]]
+
 
                 prop = {
                     "ParameterKey": propkey,
-                    "ParameterValue": value if type(value) is str else str(value).lower()
+                    "ParameterValue": value if type(value) is str else str(value)
                 }
 
                 print("Param Key: {} Value: {}".format(prop["ParameterKey"], prop["ParameterValue"]))
