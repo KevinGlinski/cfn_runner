@@ -19,8 +19,8 @@ def main():
         stackstatus = cloudformation.describe_stacks(
             StackName=stack_properties['stackname']
         )
-        if "ROLLBACK" in stack_status:
-            print(json.dumps(stack_status))
+        if "ROLLBACK" in stackstatus:
+            print(json.dumps(stackstatus))
 
         return stackstatus['Stacks'][0]['StackStatus']
 
