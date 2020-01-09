@@ -8,6 +8,10 @@ import sys
 import traceback 
 from deepmerge import always_merger
 
+import sys
+if sys.version_info[0] >= 3:
+    unicode = str
+
 def main():
     
     def merge_dicts(x, y):
