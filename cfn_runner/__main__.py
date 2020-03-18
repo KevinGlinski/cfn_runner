@@ -137,6 +137,7 @@ def main():
                         Tags=taglist,
                         Capabilities=[
                             'CAPABILITY_IAM',
+                            'CAPABILITY_NAMED_IAM'
                         ],
                         Parameters=parameter_list,
                         ChangeSetName='test',
