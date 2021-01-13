@@ -12,6 +12,14 @@ import sys
 if sys.version_info[0] >= 3:
     unicode = str
 
+def save_template(s3_url, template):
+    s3 = boto3.resource('s3')
+
+    bucket = s3_url.replace("s3:/", )
+
+    s3object = s3.Object('your-bucket-name', 'your_file.json')
+
+
 def main():
     
     def merge_dicts(x, y):
@@ -53,6 +61,10 @@ def main():
     parser.add_argument('--dryrun', dest='dry_run', action='store_true',
                     help='show a list of changes from existing stack')                   
 
+
+    parser.add_argument('--s3Url', dest='s3_url',
+                    help='S3 url to save the template, required if template if over 51200 bytes')   
+
     try:
         args = parser.parse_args()
 
@@ -63,14 +75,14 @@ def main():
             print("properties filename not defined")
             sys.exit(1)
 
-        with open(args.properties_filename, 'r') as stream:
+        with open(args.properties_filename, 'rt') as stream:
             try:
                 stack_properties = yaml.load(stream, Loader=yaml.BaseLoader)
             except yaml.YAMLError as exc:
                 print(exc)
 
         if args.tags_filename:
-            with open(args.tags_filename, 'r') as stream:
+            with open(args.tags_filename, 'rt') as stream:
                 try:
                     stack_tags = yaml.load(stream, Loader=yaml.BaseLoader)
                 except yaml.YAMLError as exc:
@@ -115,8 +127,9 @@ def main():
 
         resources = {}
         for file in os.listdir(args.resources_directory):
-            with open(args.resources_directory + "/" + file, 'r') as stream:
-
+            print("opening " + file)
+            with open(args.resources_directory + "/" + file, 'rt') as stream:
+                
                 file_resources = yaml.load(stream, Loader=yaml.BaseLoader)
                 resources = merge_dicts(resources, file_resources)
 
@@ -137,7 +150,8 @@ def main():
                         Tags=taglist,
                         Capabilities=[
                             'CAPABILITY_IAM',
-                            'CAPABILITY_NAMED_IAM'
+                            'CAPABILITY_NAMED_IAM',
+                            'CAPABILITY_AUTO_EXPAND'
                         ],
                         Parameters=parameter_list,
                         ChangeSetName='test',
@@ -186,17 +200,30 @@ def main():
             print(resources)
 
             try:
-
-                response = cloudformation.update_stack(
-                    StackName=stack_properties['stackname'],
-                    TemplateBody=json.dumps(resources),
-                    Tags=taglist,
-                    Capabilities=[
-                        'CAPABILITY_IAM',
-                        'CAPABILITY_NAMED_IAM'
-                    ],
-                    Parameters=parameter_list
-                )
+                if args.s3_url:
+                    response = cloudformation.update_stack(
+                        StackName=stack_properties['stackname'],
+                        TemplateBody=json.dumps(resources),
+                        Tags=taglist,
+                        Capabilities=[
+                            'CAPABILITY_IAM',
+                            'CAPABILITY_NAMED_IAM',
+                            'CAPABILITY_AUTO_EXPAND'
+                        ],
+                        Parameters=parameter_list
+                    )
+                else:
+                    response = cloudformation.update_stack(
+                        StackName=stack_properties['stackname'],
+                        TemplateBody=json.dumps(resources),
+                        Tags=taglist,
+                        Capabilities=[
+                            'CAPABILITY_IAM',
+                            'CAPABILITY_NAMED_IAM',
+                            'CAPABILITY_AUTO_EXPAND'
+                        ],
+                        Parameters=parameter_list
+                    )
             except Exception as e:
                 if 'No updates are to be performed' not in str(e) :
                     print ('not in e')
