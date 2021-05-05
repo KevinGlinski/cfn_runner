@@ -206,10 +206,9 @@ def main():
                 if args.s3_bucket:
                     object = s3.Object(args.s3_bucket, args.s3_key)
                     object.put(Body=json.dumps(resources))
-
                     response = cloudformation.update_stack(
                         StackName=stack_properties['stackname'],
-                        TemplateURL="s3://{}/{}".format(args.s3_bucket, args.s3_key),
+                        TemplateURL="https://{}.s3.us-east-2.amazonaws.com/{}".format(args.s3_bucket, args.s3_key),
                         Tags=taglist,
                         Capabilities=[
                             'CAPABILITY_IAM',
