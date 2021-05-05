@@ -62,9 +62,11 @@ def main():
                     help='show a list of changes from existing stack')                   
 
 
-    parser.add_argument('--s3Url', dest='s3_url',
-                    help='S3 url to save the template, required if template if over 51200 bytes')   
+    parser.add_argument('--s3Bucket', dest='s3_bucket',
+                    help='S3 bucket to save the template, required if template if over 51200 bytes')   
 
+    parser.add_argument('--s3Key', dest='s3_key',
+                    help='S3 key to save the template, required if template if over 51200 bytes')   
     try:
         args = parser.parse_args()
 
@@ -102,6 +104,7 @@ def main():
         parameter_list = []
         
         cloudformation = boto3.client('cloudformation', region_name=stack_properties['region'])
+        s3 = boto3.resource('s3', region_name=stack_properties['region'])
         
         if 'parameters' in stack_properties:
             for propkey in stack_properties['parameters']:
@@ -200,10 +203,13 @@ def main():
             print(resources)
 
             try:
-                if args.s3_url:
+                if args.s3_bucket:
+                    object = s3.Object(args.s3_bucket, args.s3_key)
+                    object.put(Body=json.dumps(resources))
+
                     response = cloudformation.update_stack(
                         StackName=stack_properties['stackname'],
-                        TemplateBody=json.dumps(resources),
+                        TemplateURL="s3://{}/{}".format(args.s3_bucket, args.s3_key),
                         Tags=taglist,
                         Capabilities=[
                             'CAPABILITY_IAM',
@@ -229,17 +235,33 @@ def main():
                     print ('not in e')
                     raise e
         else:
-            response = cloudformation.create_stack(
-                StackName=stack_properties['stackname'],
-                TemplateBody=json.dumps(resources),
-                Tags=taglist,
-                Capabilities=[
-                    'CAPABILITY_IAM',
-                    'CAPABILITY_NAMED_IAM'
-                ],
-                Parameters=parameter_list
-                
-            )
+            if args.s3_bucket:
+                object = s3.Object(args.s3_bucket, args.s3_key)
+                object.put(Body=json.dumps(resources))
+
+                response = cloudformation.create_stack(
+                    StackName=stack_properties['stackname'],
+                    TemplateURL="s3://{}/{}".format(args.s3_bucket, args.s3_key),
+                    Tags=taglist,
+                    Capabilities=[
+                        'CAPABILITY_IAM',
+                        'CAPABILITY_NAMED_IAM',
+                        'CAPABILITY_AUTO_EXPAND'
+                    ],
+                    Parameters=parameter_list
+                )
+            else:
+                response = cloudformation.create_stack(
+                    StackName=stack_properties['stackname'],
+                    TemplateBody=json.dumps(resources),
+                    Tags=taglist,
+                    Capabilities=[
+                        'CAPABILITY_IAM',
+                        'CAPABILITY_NAMED_IAM'
+                    ],
+                    Parameters=parameter_list
+                    
+                )
 
 
         if response:
