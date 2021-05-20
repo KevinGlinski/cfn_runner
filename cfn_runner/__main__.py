@@ -240,7 +240,7 @@ def main():
 
                 response = cloudformation.create_stack(
                     StackName=stack_properties['stackname'],
-                    TemplateURL="s3://{}/{}".format(args.s3_bucket, args.s3_key),
+                    TemplateURL="https://{}.s3.{}.amazonaws.com/{}".format(args.s3_bucket, stack_properties['region'], args.s3_key),
                     Tags=taglist,
                     Capabilities=[
                         'CAPABILITY_IAM',
