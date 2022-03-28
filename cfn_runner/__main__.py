@@ -62,6 +62,10 @@ def main():
                     help='show a list of changes from existing stack')                   
 
 
+    parser.add_argument('--removedynamodbreplicas', dest='remove_dynamodb_replicas', action='store_true',
+                    help='Remove any Dynamo DB region replica configuration')                   
+
+
     parser.add_argument('--s3Bucket', dest='s3_bucket',
                     help='S3 bucket to save the template, required if template if over 51200 bytes')   
 
@@ -138,11 +142,18 @@ def main():
 
         response = {}
 
+        if args.remove_dynamodb_replicas:
+            for resourceId in resources['Resources']:
+                if resources['Resources'][resourceId]['Type'] == "AWS::DynamoDB::GlobalTable":
+                    resources['Resources'][resourceId]['Properties']['Replicas'] = [x for x in resources['Resources'][resourceId]['Properties']['Replicas'] if x['Region'] == stack_properties['region']]
+
+
+
         if args.dry_run:
 
             change_type = "CREATE"
 
-            print(json.dumps(resources))
+            print(yaml.dump(resources, sys.stdout))
             if has_stack(stack_properties['stackname']):
                 change_type = 'UPDATE'
 
