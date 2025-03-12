@@ -48,8 +48,9 @@ def main():
         return True
 
     parser = argparse.ArgumentParser(description='Cloudformation Runner')
-    parser.add_argument('--properties', dest='properties_filename',
-                    help='Path to the properties file' , required=True)
+    parser.add_argument('--properties', dest='properties_filename', action='append', 
+                    help='Path to the properties file, this argument can appear multiple times and will be evaluated in order' , required=True)
+    
 
     parser.add_argument('--tags', dest='tags_filename',
                     help='Path to the tags file')                   
@@ -74,18 +75,20 @@ def main():
     try:
         args = parser.parse_args()
 
-        stack_properties = None
+        stack_properties = {}
         stack_tags = {}
 
         if not args.properties_filename:
             print("properties filename not defined")
             sys.exit(1)
 
-        with open(args.properties_filename, 'rt') as stream:
-            try:
-                stack_properties = yaml.load(stream, Loader=yaml.BaseLoader)
-            except yaml.YAMLError as exc:
-                print(exc)
+        for property_file in args.properties_filename:
+            with open(property_file, 'rt') as stream:
+                try:
+                    stack_properties_from_file = yaml.load(stream, Loader=yaml.BaseLoader)
+                    stack_properties = merge_dicts(stack_properties, stack_properties_from_file)
+                except yaml.YAMLError as exc:
+                    print(exc)
 
         if args.tags_filename:
             with open(args.tags_filename, 'rt') as stream:
@@ -113,13 +116,11 @@ def main():
         if 'parameters' in stack_properties:
             for propkey in stack_properties['parameters']:
                 value = str(stack_properties['parameters'][propkey])
-                print("{} type {}".format(value, type(value)))
-               
+                
                 if isinstance(value, unicode):
                     value = str(value)
 
-                if isinstance(value, str) and len(value) > 0 and value[0] is "$":
-                    print("envar {}= {}", value[1:], os.environ[value[1:]])
+                if isinstance(value, str) and len(value) > 0 and value[0] == "$":
                     value = os.environ[value[1:]]
 
 
@@ -128,7 +129,7 @@ def main():
                     "ParameterValue": value if type(value) is str else str(value)
                 }
 
-                print("Param Key: {} Value: {}".format(prop["ParameterKey"], prop["ParameterValue"]))
+                print("Param Key: {} Value: {} Type: {}".format(prop["ParameterKey"], prop["ParameterValue"], type(value)))
 
                 parameter_list.append(prop)    
 
