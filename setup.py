@@ -4,7 +4,7 @@ setup(
     version = '0.2.0',
     packages = ['cfn_runner'],
     license='mit',
-    install_requires = ['boto3','pyyaml', 'deepmerge>1.1.1'],
+    install_requires = ['boto3','pyyaml', 'deepmerge>=1.1.1'],
     entry_points = {
         'console_scripts': [
             'cfn_runner = cfn_runner.__main__:main'
