@@ -83,10 +83,13 @@ def main():
             sys.exit(1)
 
         for property_file in args.properties_filename:
+            print(f"processing property file {property_file}")
             with open(property_file, 'rt') as stream:
                 try:
                     stack_properties_from_file = yaml.load(stream, Loader=yaml.BaseLoader)
                     stack_properties = merge_dicts(stack_properties, stack_properties_from_file)
+
+                    print(stack_properties)
                 except yaml.YAMLError as exc:
                     print(exc)
 
