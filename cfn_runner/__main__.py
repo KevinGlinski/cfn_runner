@@ -35,6 +35,20 @@ def main():
             print(json.dumps(stackstatus))
 
         return stackstatus['Stacks'][0]['StackStatus']
+    
+    def print_stack_errors(stackname):
+
+        stackstatus = cloudformation.describe_events(
+            StackName='PureInsightsDB',
+            Filters={
+                'FailedEvents': True
+            })
+
+        for event in stackstatus['OperationEvents']:
+            if event["ResourceStatusReason"] == "Resource update cancelled":
+                continue
+
+            print(f"{event["LogicalResourceId"]} - {event["ResourceStatusReason"]}")
 
     def has_stack(stackname):
         try:
@@ -289,6 +303,8 @@ def main():
 
             print (stack_status)
             if "ROLLBACK" in stack_status:
+                print_stack_errors(stack_properties['stackname'])
+                print(f"https://{stack_properties['region']}.console.aws.amazon.com/cloudformation/home?region={stack_properties['region']}#/stacks/events?filteringText={stack_properties['stackname']}")
                 raise Exception("Stack not updated properly")
         #     UPDATE_IN_PROGRESS
         else:
