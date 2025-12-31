@@ -48,7 +48,7 @@ def main():
             if event["ResourceStatusReason"] == "Resource update cancelled":
                 continue
 
-            print(f"{event["LogicalResourceId"]} - {event["ResourceStatusReason"]}")
+            print(f"{event['LogicalResourceId']} - {event['ResourceStatusReason']}")
 
     def has_stack(stackname):
         try:
