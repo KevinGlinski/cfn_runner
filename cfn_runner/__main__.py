@@ -303,7 +303,7 @@ def main():
 
             print (stack_status)
             if "ROLLBACK" in stack_status:
-                print_stack_errors(stack_properties['stackname'])
+                # print_stack_errors(stack_properties['stackname'])
                 print(f"https://{stack_properties['region']}.console.aws.amazon.com/cloudformation/home?region={stack_properties['region']}#/stacks/events?filteringText={stack_properties['stackname']}")
                 raise Exception("Stack not updated properly")
         #     UPDATE_IN_PROGRESS
